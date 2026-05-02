@@ -1,0 +1,55 @@
+@use "@/styles/variables" as *;
+
+.header {
+  background: linear-gradient(135deg, $pink-dark, $pink);
+  color: white;
+  padding: 1rem 1.5rem;
+  text-align: center;
+
+  h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  p {
+    font-size: 0.85rem;
+    opacity: 0.85;
+    margin-top: 0.2rem;
+  }
+}
+
+.tabs {
+  display: flex;
+  background: $surface;
+  border-bottom: 2px solid $border;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.tabBtn {
+  flex: 1;
+  padding: 0.85rem;
+  border: none;
+  background: none;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: $text-muted;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-bottom: 3px solid transparent;
+
+  &.active {
+    color: $pink-dark;
+    border-bottom-color: $pink-dark;
+    background: $pink-light;
+  }
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}

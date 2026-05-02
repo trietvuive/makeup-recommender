@@ -1,0 +1,72 @@
+@use "@/styles/variables" as *;
+
+.container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem;
+  max-width: 700px;
+  margin: 0 auto;
+  width: 100%;
+
+  h2 {
+    font-size: 1.15rem;
+    margin-bottom: 0.5rem;
+  }
+}
+
+.loading {
+  padding: 2rem;
+  text-align: center;
+  color: $text-muted;
+}
+
+.notice {
+  font-size: 0.78rem;
+  color: $text-muted;
+  font-style: italic;
+  margin-bottom: 1.25rem;
+}
+
+.subnotice {
+  font-size: 0.78rem;
+  color: $text-muted;
+  font-style: italic;
+  margin-bottom: 0.5rem;
+}
+
+.formGroup {
+  margin-bottom: 1rem;
+
+  label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: $text-muted;
+    margin-bottom: 0.3rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  input,
+  select,
+  textarea {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    border: 1.5px solid $border;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    background: $surface;
+    color: $text;
+    font-family: inherit;
+
+    &:focus {
+      outline: none;
+      border-color: $pink;
+    }
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 70px;
+  }
+}

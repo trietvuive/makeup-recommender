@@ -1,0 +1,157 @@
+@use "@/styles/variables" as *;
+
+.wrapper {
+  margin-top: 0.25rem;
+}
+
+.searchWrap {
+  position: relative;
+  margin-bottom: 0.75rem;
+
+  .searchIcon {
+    position: absolute;
+    left: 0.7rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: $text-muted;
+    font-size: 0.9rem;
+    pointer-events: none;
+  }
+
+  input {
+    width: 100%;
+    padding: 0.6rem 0.75rem 0.6rem 2.2rem;
+    border: 1.5px solid $border;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    background: $surface;
+    color: $text;
+
+    &:focus {
+      outline: none;
+      border-color: $pink;
+    }
+  }
+}
+
+.dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  background: $surface;
+  border: 1.5px solid $border;
+  border-radius: 0 0 8px 8px;
+  max-height: 280px;
+  overflow-y: auto;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.55rem 0.75rem;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover {
+    background: $pink-light;
+  }
+
+  img {
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    object-fit: cover;
+    background: $bg;
+    flex-shrink: 0;
+  }
+}
+
+.optionInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.optionName {
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.optionMeta {
+  font-size: 0.75rem;
+  color: $text-muted;
+}
+
+.addedList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.empty {
+  font-size: 0.85rem;
+  color: $text-muted;
+  font-style: italic;
+  padding: 0.5rem 0;
+}
+
+.addedItem {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  background: $surface;
+  border: 1.5px solid $border;
+  border-radius: 10px;
+  padding: 0.5rem 0.7rem;
+  transition: border-color 0.15s;
+
+  &:hover {
+    border-color: $pink;
+  }
+
+  img {
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    object-fit: cover;
+    background: $bg;
+    flex-shrink: 0;
+  }
+}
+
+.addedInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.addedName {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.addedMeta {
+  font-size: 0.75rem;
+  color: $text-muted;
+}
+
+.removeBtn {
+  background: none;
+  border: none;
+  color: $text-muted;
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  transition: all 0.15s;
+
+  &:hover {
+    background: #ffe0e0;
+    color: #c04040;
+  }
+}
