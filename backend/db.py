@@ -4,27 +4,19 @@ from pathlib import Path
 from products_seed import PRODUCTS
 
 DB_PATH = Path(__file__).parent / "data.db"
+DEFAULT_USER_EXTERNAL_ID = "default"
 
-CATEGORY_IMAGES = {
-    "Blush": "https://images.unsplash.com/photo-1596755389378-c31d21fd1273?w=1000&h=1000&fit=crop",
-    "Cleanser": "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=1000&h=1000&fit=crop",
-    "Concealer": "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=1000&h=1000&fit=crop",
-    "Essence": "https://images.unsplash.com/photo-1601049676869-702ea24cfd58?w=1000&h=1000&fit=crop",
-    "Exfoliant": "https://images.unsplash.com/photo-1617897903246-719242758050?w=1000&h=1000&fit=crop",
-    "Eyeshadow": "https://images.unsplash.com/photo-1583241800698-e8ab01830a07?w=1000&h=1000&fit=crop",
-    "Foundation": "https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=1000&h=1000&fit=crop",
-    "Lip": "https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=1000&h=1000&fit=crop",
-    "Mascara": "https://images.unsplash.com/photo-1591360236480-4ed861025fa1?w=1000&h=1000&fit=crop",
-    "Mask": "https://images.unsplash.com/photo-1596755389378-c31d21fd1273?w=1000&h=1000&fit=crop",
-    "Moisturizer": "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=1000&h=1000&fit=crop",
-    "Primer": "https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=1000&h=1000&fit=crop",
-    "Retinol": "https://images.unsplash.com/photo-1617897903246-719242758050?w=1000&h=1000&fit=crop",
-    "Serum": "https://images.unsplash.com/photo-1615397349754-cfa2066a298e?w=1000&h=1000&fit=crop",
-    "Setting Spray": "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=1000&h=1000&fit=crop",
-    "Sunscreen": "https://images.unsplash.com/photo-1532947974-2e3966a7de28?w=1000&h=1000&fit=crop",
-    "Toner": "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=1000&h=1000&fit=crop",
-    "Treatment": "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=1000&h=1000&fit=crop",
-}
+PRODUCT_SELECT = """
+    product_id AS productId,
+    name,
+    brand,
+    category,
+    type,
+    key_ingredients AS keyIngredients,
+    price_low AS priceLow,
+    price_high AS priceHigh,
+    img
+"""
 
 def get_conn() -> sqlite3.Connection:
     conn = sqlite3.connect(str(DB_PATH))
@@ -37,8 +29,18 @@ def get_conn() -> sqlite3.Connection:
 def init_db():
     conn = get_conn()
     conn.executescript("""
+        CREATE TABLE IF NOT EXISTS users (
+            id           INTEGER PRIMARY KEY AUTOINCREMENT,
+            external_id  TEXT NOT NULL UNIQUE,
+            display_name TEXT,
+            email        TEXT UNIQUE,
+            created_at   DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at   DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+
         CREATE TABLE IF NOT EXISTS profiles (
             id          INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id     INTEGER REFERENCES users(id) ON DELETE CASCADE,
             name        TEXT NOT NULL DEFAULT 'default',
             age         TEXT,
             gender      TEXT,
@@ -56,7 +58,7 @@ def init_db():
         CREATE TABLE IF NOT EXISTS profile_products (
             id          INTEGER PRIMARY KEY AUTOINCREMENT,
             profile_id  INTEGER NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-            product_id  TEXT NOT NULL,
+            product_id  INTEGER NOT NULL,
             added_at    DATETIME DEFAULT CURRENT_TIMESTAMP,
             UNIQUE(profile_id, product_id)
         );
@@ -87,58 +89,89 @@ def init_db():
         );
 
         CREATE TABLE IF NOT EXISTS products (
+            product_id      INTEGER UNIQUE,
             id              TEXT PRIMARY KEY,
             name            TEXT NOT NULL,
             brand           TEXT NOT NULL,
             category        TEXT NOT NULL,
             type            TEXT NOT NULL,
             key_ingredients TEXT NOT NULL,
-            price           TEXT NOT NULL,
+            price_low       INTEGER NOT NULL,
+            price_high      INTEGER NOT NULL,
             img             TEXT NOT NULL,
             updated_at      DATETIME DEFAULT CURRENT_TIMESTAMP
         );
     """)
+    ensure_user_schema(conn)
+    ensure_product_schema(conn)
     seed_products(conn)
     conn.commit()
     conn.close()
 
 
+def ensure_user_schema(conn: sqlite3.Connection):
+    profile_cols = {row["name"] for row in conn.execute("PRAGMA table_info(profiles)").fetchall()}
+    if "user_id" not in profile_cols:
+        conn.execute("ALTER TABLE profiles ADD COLUMN user_id INTEGER REFERENCES users(id) ON DELETE CASCADE")
+
+    user = get_or_create_user(DEFAULT_USER_EXTERNAL_ID, "Default User", conn=conn)
+    conn.execute(
+        "UPDATE profiles SET user_id = ? WHERE user_id IS NULL",
+        (user["id"],),
+    )
+    conn.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_profiles_user_name ON profiles(user_id, name)")
+
+
+def ensure_product_schema(conn: sqlite3.Connection):
+    product_cols = {row["name"] for row in conn.execute("PRAGMA table_info(products)").fetchall()}
+    if "product_id" not in product_cols:
+        conn.execute("ALTER TABLE products ADD COLUMN product_id INTEGER")
+    if "price_low" not in product_cols:
+        conn.execute("ALTER TABLE products ADD COLUMN price_low INTEGER")
+    if "price_high" not in product_cols:
+        conn.execute("ALTER TABLE products ADD COLUMN price_high INTEGER")
+    if "price" in product_cols:
+        conn.execute("ALTER TABLE products DROP COLUMN price")
+    conn.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_products_product_id ON products(product_id)")
+
+
 def seed_products(conn: sqlite3.Connection):
-    for product in PRODUCTS:
+    for product_id, product in enumerate(PRODUCTS, start=1):
         conn.execute(
             """
             INSERT INTO products (
-                id, name, brand, category, type, key_ingredients, price, img
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                product_id, id, name, brand, category, type, key_ingredients,
+                price_low, price_high, img
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(id) DO UPDATE SET
+                product_id = excluded.product_id,
                 name = excluded.name,
                 brand = excluded.brand,
                 category = excluded.category,
                 type = excluded.type,
                 key_ingredients = excluded.key_ingredients,
-                price = excluded.price,
+                price_low = excluded.price_low,
+                price_high = excluded.price_high,
                 img = excluded.img,
                 updated_at = CURRENT_TIMESTAMP
             """,
             (
+                product_id,
                 product["id"],
                 product["name"],
                 product["brand"],
                 product["category"],
                 product["type"],
                 product["keyIngredients"],
-                product["price"],
+                product["priceLow"],
+                product["priceHigh"],
                 product["img"],
             ),
         )
 
 
 def product_from_row(row: sqlite3.Row) -> dict:
-    product = dict(row)
-    product["keyIngredients"] = product.pop("key_ingredients")
-    product.pop("updated_at", None)
-    product["img"] = CATEGORY_IMAGES.get(product["category"], product["img"])
-    return product
+    return dict(row)
 
 
 def list_products(query: str | None = None, limit: int = 20) -> list[dict]:
@@ -148,8 +181,9 @@ def list_products(query: str | None = None, limit: int = 20) -> list[dict]:
     if query:
         like = f"%{query.strip()}%"
         rows = conn.execute(
-            """
-            SELECT * FROM products
+            f"""
+            SELECT {PRODUCT_SELECT}
+            FROM products
             WHERE name LIKE ?
                OR brand LIKE ?
                OR category LIKE ?
@@ -162,50 +196,130 @@ def list_products(query: str | None = None, limit: int = 20) -> list[dict]:
         ).fetchall()
     else:
         rows = conn.execute(
-            "SELECT * FROM products ORDER BY brand, name LIMIT ?",
+            f"SELECT {PRODUCT_SELECT} FROM products ORDER BY brand, name LIMIT ?",
             (limit,),
         ).fetchall()
     conn.close()
     return [product_from_row(r) for r in rows]
 
 
-def get_products_by_ids(product_ids: list[str]) -> list[dict]:
+def get_products_by_product_ids(product_ids: list[int]) -> list[dict]:
     if not product_ids:
         return []
 
     conn = get_conn()
     placeholders = ",".join("?" for _ in product_ids)
     rows = conn.execute(
-        f"SELECT * FROM products WHERE id IN ({placeholders})",
+        f"SELECT {PRODUCT_SELECT} FROM products WHERE product_id IN ({placeholders})",
         product_ids,
     ).fetchall()
     conn.close()
 
-    by_id = {row["id"]: product_from_row(row) for row in rows}
+    by_id = {row["productId"]: product_from_row(row) for row in rows}
     return [by_id[pid] for pid in product_ids if pid in by_id]
 
 
-# ── Profile CRUD ──────────────────────────────────────────
+# ── User/Profile CRUD ─────────────────────────────────────
+
+
+def get_or_create_user(
+    external_id: str = DEFAULT_USER_EXTERNAL_ID,
+    display_name: str | None = None,
+    email: str | None = None,
+    conn: sqlite3.Connection | None = None,
+) -> dict:
+    owns_conn = conn is None
+    conn = conn or get_conn()
+
+    row = conn.execute("SELECT * FROM users WHERE external_id = ?", (external_id,)).fetchone()
+    if not row:
+        conn.execute(
+            """
+            INSERT INTO users (external_id, display_name, email)
+            VALUES (?, ?, ?)
+            """,
+            (external_id, display_name, email),
+        )
+        if owns_conn:
+            conn.commit()
+        row = conn.execute("SELECT * FROM users WHERE external_id = ?", (external_id,)).fetchone()
+    elif display_name or email:
+        conn.execute(
+            """
+            UPDATE users
+            SET display_name = COALESCE(?, display_name),
+                email = COALESCE(?, email),
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+            """,
+            (display_name, email, row["id"]),
+        )
+        if owns_conn:
+            conn.commit()
+        row = conn.execute("SELECT * FROM users WHERE external_id = ?", (external_id,)).fetchone()
+
+    user = dict(row)
+    if owns_conn:
+        conn.close()
+    return user
 
 PROFILE_COLS = ["age", "gender", "skin_type", "skin_tone", "undertone",
                 "climate", "allergies", "budget", "extra"]
 
-def get_or_create_profile(name: str = "default") -> dict:
+
+def profile_product_ids(conn: sqlite3.Connection, profile_id: int) -> list[int]:
+    rows = conn.execute(
+        "SELECT product_id FROM profile_products WHERE profile_id = ? ORDER BY added_at",
+        (profile_id,)
+    ).fetchall()
+    if not rows:
+        return []
+
+    products = []
+    for row in rows:
+        value = row["product_id"]
+        try:
+            products.append(int(value))
+            continue
+        except (TypeError, ValueError):
+            pass
+
+        product_row = conn.execute(
+            "SELECT product_id FROM products WHERE id = ?",
+            (value,),
+        ).fetchone()
+        if product_row:
+            products.append(product_row["product_id"])
+
+    return products
+
+
+def get_or_create_profile(
+    name: str = "default",
+    user_id: int | None = None,
+    user_external_id: str = DEFAULT_USER_EXTERNAL_ID,
+) -> dict:
     conn = get_conn()
-    row = conn.execute("SELECT * FROM profiles WHERE name = ?", (name,)).fetchone()
+    if user_id is None:
+        user = get_or_create_user(user_external_id, "Default User", conn=conn)
+        user_id = user["id"]
+
+    row = conn.execute(
+        "SELECT * FROM profiles WHERE user_id = ? AND name = ?",
+        (user_id, name),
+    ).fetchone()
     if row:
         profile = dict(row)
-        products = [r["product_id"] for r in conn.execute(
-            "SELECT product_id FROM profile_products WHERE profile_id = ? ORDER BY added_at",
-            (profile["id"],)
-        ).fetchall()]
-        profile["products"] = products
+        profile["products"] = profile_product_ids(conn, profile["id"])
         conn.close()
         return profile
 
-    conn.execute("INSERT INTO profiles (name) VALUES (?)", (name,))
+    conn.execute("INSERT INTO profiles (user_id, name) VALUES (?, ?)", (user_id, name))
     conn.commit()
-    row = conn.execute("SELECT * FROM profiles WHERE name = ?", (name,)).fetchone()
+    row = conn.execute(
+        "SELECT * FROM profiles WHERE user_id = ? AND name = ?",
+        (user_id, name),
+    ).fetchone()
     profile = dict(row)
     profile["products"] = []
     conn.close()
@@ -214,6 +328,9 @@ def get_or_create_profile(name: str = "default") -> dict:
 
 def update_profile(profile_id: int, data: dict) -> dict:
     conn = get_conn()
+    profile_row = conn.execute("SELECT user_id, name FROM profiles WHERE id = ?", (profile_id,)).fetchone()
+    user_id = profile_row["user_id"] if profile_row else None
+    name = profile_row["name"] if profile_row else "default"
     sets = []
     vals = []
     for col in PROFILE_COLS:
@@ -235,7 +352,7 @@ def update_profile(profile_id: int, data: dict) -> dict:
 
     conn.commit()
     conn.close()
-    return get_or_create_profile()
+    return get_or_create_profile(name=name, user_id=user_id)
 
 
 # ── Conversation CRUD ─────────────────────────────────────

@@ -1,4 +1,4 @@
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API = process.env.NEXT_PUBLIC_API_URL || "";
 
 async function request<T>(path: string, opts?: RequestInit): Promise<T> {
   const res = await fetch(`${API}${path}`, {
@@ -10,6 +10,7 @@ async function request<T>(path: string, opts?: RequestInit): Promise<T> {
 
 export interface ProfileData {
   id: number;
+  user_id: number;
   age: string | null;
   gender: string | null;
   skin_type: string | null;
@@ -19,7 +20,7 @@ export interface ProfileData {
   allergies: string | null;
   budget: string | null;
   extra: string | null;
-  products: string[];
+  products: number[];
 }
 
 export interface Conversation {
@@ -52,13 +53,14 @@ export interface Attachment {
 }
 
 export interface Product {
-  id: string;
+  productId: number;
   name: string;
   brand: string;
   category: string;
   type: string;
   keyIngredients: string;
-  price: string;
+  priceLow: number;
+  priceHigh: number;
   img: string;
 }
 
@@ -85,17 +87,17 @@ export const api = {
 
   getMessages: (id: number) => request<Message[]>(`/api/conversations/${id}/messages`),
 
-  getProducts: (params: { q?: string; ids?: string[]; limit?: number } = {}) => {
+  getProducts: (params: { q?: string; productIds?: number[]; limit?: number } = {}) => {
     const search = new URLSearchParams();
     if (params.q) search.set("q", params.q);
-    if (params.ids?.length) search.set("ids", params.ids.join(","));
+    if (params.productIds?.length) search.set("productIds", params.productIds.join(","));
     if (params.limit) search.set("limit", String(params.limit));
     const suffix = search.toString() ? `?${search.toString()}` : "";
     return request<Product[]>(`/api/products${suffix}`);
   },
 
-  getProduct: async (id: string) => {
-    const products = await api.getProducts({ ids: [id] });
+  getProduct: async (productId: number) => {
+    const products = await api.getProducts({ productIds: [productId] });
     return products[0] ?? null;
   },
 

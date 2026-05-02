@@ -1,8 +1,8 @@
 @use "@/styles/variables" as *;
 
 .page {
-  min-height: 100vh;
   background: linear-gradient(145deg, $pink-wash 0%, $cream 55%, $pink-light 100%);
+  flex: 1;
   padding: 2rem;
 }
 
@@ -40,18 +40,25 @@
 
 .imageWrap {
   align-items: center;
+  align-self: center;
   background: $pink-light;
   border-radius: 24px;
+  box-sizing: border-box;
   display: flex;
   justify-content: center;
-  min-height: 360px;
+  justify-self: center;
+  max-width: 100%;
+  padding: 1rem;
   overflow: hidden;
+  width: fit-content;
 
   img {
-    height: 100%;
+    display: block;
+    height: auto;
     max-height: 420px;
-    object-fit: cover;
-    width: 100%;
+    max-width: min(100%, 420px);
+    object-fit: contain;
+    width: auto;
   }
 }
 

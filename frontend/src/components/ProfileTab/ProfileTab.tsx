@@ -20,26 +20,36 @@ const SELECT_OPTIONS = {
     "Varies by season",
   ],
   budget: [
-    "Drugstore only",
-    "Drugstore + mid-range",
-    "Mid-range",
-    "Mid-range + luxury",
+    "Under $20",
+    "$20-$45",
+    "$45-$120",
+    "$120+",
     "No budget limit",
   ],
 };
 
 export default function ProfileTab() {
   const [profile, setProfile] = useState<ProfileData | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   useEffect(() => {
-    api.getProfile().then(setProfile);
+    api.getProfile()
+      .then((data) => {
+        setProfile(data);
+        setLoadError(null);
+      })
+      .catch(() => {
+        setLoadError("Unable to load your profile. Please try refreshing in a moment.");
+      });
   }, []);
 
   const save = useCallback((data: Partial<ProfileData>) => {
     clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => {
-      api.updateProfile(data);
+      api.updateProfile(data).catch(() => {
+        setLoadError("Unable to save your profile changes. Please try again.");
+      });
     }, 500);
   }, []);
 
@@ -50,7 +60,7 @@ export default function ProfileTab() {
     save(next);
   }
 
-  function updateProducts(ids: string[]) {
+  function updateProducts(ids: number[]) {
     if (!profile) return;
     const next = { ...profile, products: ids };
     setProfile(next);
@@ -60,7 +70,7 @@ export default function ProfileTab() {
   if (!profile) {
     return (
       <div className={styles.loading}>
-        <div className={styles.spinner} />
+        {loadError || <div className={styles.spinner} />}
       </div>
     );
   }

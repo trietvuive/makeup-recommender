@@ -4,6 +4,8 @@ import type { ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import type { Product } from "@/lib/api";
+import { productHref } from "@/lib/productLinks";
+import { formatPriceRange } from "@/lib/price";
 import styles from "./ProductHoverLink.module.scss";
 
 interface Props {
@@ -14,7 +16,7 @@ interface Props {
 export default function ProductHoverLink({ product, children }: Props) {
   return (
     <span className={styles.wrap}>
-      <Link href={`/products/${product.id}`} className={styles.link}>
+      <Link href={productHref(product.productId)} className={styles.link}>
         {children}
       </Link>
       <span className={styles.card} role="tooltip">
@@ -24,7 +26,7 @@ export default function ProductHoverLink({ product, children }: Props) {
           <small>{product.brand}</small>
           <span>{product.category} · {product.type}</span>
           <span>{product.keyIngredients}</span>
-          <em>{product.price}</em>
+          <em>{formatPriceRange(product)}</em>
         </span>
       </span>
     </span>

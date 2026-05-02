@@ -58,7 +58,7 @@ When recommending products:
 - Always consider the user's skin type, allergies, climate, and existing routine
 - Suggest 2-4 specific products per concern
 - Include a brief explanation of WHY each product suits them
-- Mention price range (drugstore / mid-range / luxury) when possible
+- Mention concrete price range when possible
 - Warn about any ingredient conflicts with their allergies or current routine
 - Be conversational and supportive
 - Use Markdown with short sections:
@@ -264,7 +264,7 @@ def prepare_chat(
 
     routine_products = None
     if profile.get("products"):
-        products = db.get_products_by_ids(profile["products"])
+        products = db.get_products_by_product_ids(profile["products"])
         routine_products = ", ".join(
             f"{p['brand']} {p['name']}" for p in products
         )
@@ -329,9 +329,18 @@ def update_profile():
 
 @app.route("/api/products", methods=["GET"])
 def list_products():
-    ids = request.args.get("ids", "").strip()
-    if ids:
-        products = db.get_products_by_ids([pid for pid in ids.split(",") if pid])
+    if "ids" in request.args:
+        abort(400, description="Use productIds for product lookup.")
+
+    product_ids = request.args.get("productIds", "").strip()
+    if product_ids:
+        ids = []
+        for raw_id in product_ids.split(","):
+            try:
+                ids.append(int(raw_id))
+            except ValueError:
+                continue
+        products = db.get_products_by_product_ids(ids)
         return jsonify(products)
 
     query = request.args.get("q", "").strip()

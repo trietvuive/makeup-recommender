@@ -4,11 +4,12 @@ import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { api, type Product } from "@/lib/api";
 import { productHref } from "@/lib/productLinks";
+import { formatPriceRange } from "@/lib/price";
 import styles from "./ProductSearch.module.scss";
 
 interface Props {
-  selected: string[];
-  onChange: (ids: string[]) => void;
+  selected: number[];
+  onChange: (ids: number[]) => void;
 }
 
 export default function ProductSearch({ selected, onChange }: Props) {
@@ -35,9 +36,13 @@ export default function ProductSearch({ selected, onChange }: Props) {
       return;
     }
 
-    api.getProducts({ ids: selected }).then((products) => {
-      if (!cancelled) setSelectedProducts(products);
-    });
+    api.getProducts({ productIds: selected })
+      .then((products) => {
+        if (!cancelled) setSelectedProducts(products);
+      })
+      .catch(() => {
+        if (!cancelled) setSelectedProducts([]);
+      });
 
     return () => {
       cancelled = true;
@@ -52,21 +57,25 @@ export default function ProductSearch({ selected, onChange }: Props) {
     }
 
     const timer = setTimeout(() => {
-      api.getProducts({ q, limit: 8 }).then((products) => {
-        setMatches(products.filter((p) => !selected.includes(p.id)));
-      });
+      api.getProducts({ q, limit: 8 })
+        .then((products) => {
+          setMatches(products.filter((p) => !selected.includes(p.productId)));
+        })
+        .catch(() => {
+          setMatches([]);
+        });
     }, 150);
 
     return () => clearTimeout(timer);
   }, [query, selected]);
 
-  function add(id: string) {
+  function add(id: number) {
     onChange([...selected, id]);
     setQuery("");
     setOpen(false);
   }
 
-  function remove(id: string) {
+  function remove(id: number) {
     onChange(selected.filter((x) => x !== id));
   }
 
@@ -88,12 +97,12 @@ export default function ProductSearch({ selected, onChange }: Props) {
         {open && matches.length > 0 && (
           <div className={styles.dropdown}>
             {matches.map((p) => (
-              <div key={p.id} className={styles.option} onClick={() => add(p.id)}>
+              <div key={p.productId} className={styles.option} onClick={() => add(p.productId)}>
                 <Image src={p.img} alt="" width={80} height={80} unoptimized />
                 <div className={styles.optionInfo}>
                   <div className={styles.optionName}>{p.name}</div>
                   <div className={styles.optionMeta}>
-                    {p.category} &middot; {p.type} &middot; {p.price}
+                    {p.category} &middot; {p.type} &middot; {formatPriceRange(p)}
                   </div>
                 </div>
               </div>
@@ -108,17 +117,17 @@ export default function ProductSearch({ selected, onChange }: Props) {
         )}
         {selectedProducts.map((p) => {
           return (
-            <div key={p.id} className={styles.addedItem}>
-              <a href={productHref(p.id)} className={styles.addedLink}>
+            <div key={p.productId} className={styles.addedItem}>
+              <a href={productHref(p.productId)} className={styles.addedLink}>
                 <Image src={p.img} alt="" width={76} height={76} unoptimized />
                 <div className={styles.addedInfo}>
                   <div className={styles.addedName}>{p.name}</div>
                   <div className={styles.addedMeta}>
-                    {p.category} &middot; {p.keyIngredients} &middot; {p.price}
+                    {p.category} &middot; {p.keyIngredients} &middot; {formatPriceRange(p)}
                   </div>
                 </div>
               </a>
-              <button className={styles.removeBtn} onClick={() => remove(p.id)} title="Remove">
+              <button className={styles.removeBtn} onClick={() => remove(p.productId)} title="Remove">
                 &times;
               </button>
             </div>

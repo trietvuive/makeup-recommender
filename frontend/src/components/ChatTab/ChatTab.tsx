@@ -1,15 +1,24 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, type DragEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { api, type Conversation, type Message, type Product } from "@/lib/api";
 import { findMentionedProducts, linkifyProducts, productHref, productIdFromHref } from "@/lib/productLinks";
+import { formatPriceRange } from "@/lib/price";
 import ConversationSidebar from "@/components/ConversationSidebar/ConversationSidebar";
 import ProductHoverLink from "@/components/ProductHoverLink/ProductHoverLink";
 import styles from "./ChatTab.module.scss";
+
+const ACCEPTED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
+const STARTER_PROMPTS = [
+  "Help me build a simple morning routine for dry skin under $45.",
+  "Find me a non-comedogenic foundation that works in hot, humid weather.",
+  "I have redness and sensitive skin. What products should I try?",
+  "Can you compare my routine and tell me what I might be missing?",
+];
 
 export default function ChatTab() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -18,14 +27,21 @@ export default function ChatTab() {
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [dragActive, setDragActive] = useState(false);
   const chatAreaRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const loadConversations = useCallback(async () => {
-    const data = await api.getConversations();
-    setConversations(data);
+    try {
+      const data = await api.getConversations();
+      setConversations(data);
+      setLoadError(null);
+    } catch {
+      setLoadError("Unable to reach the beauty advisor backend. Please try refreshing in a moment.");
+    }
   }, []);
 
   useEffect(() => {
@@ -33,10 +49,16 @@ export default function ChatTab() {
   }, [loadConversations]);
 
   useEffect(() => {
-    api.getProducts({ limit: 500 }).then(setProducts);
+    api.getProducts({ limit: 500 })
+      .then(setProducts)
+      .catch(() => {
+        setProducts([]);
+        setLoadError("Unable to load products right now. Please try refreshing in a moment.");
+      });
   }, []);
 
-  const productById = new Map(products.map((product) => [product.id, product]));
+  const productById = new Map(products.map((product) => [product.productId, product]));
+  const exploreProducts = products.slice(0, 3);
 
   function renderProductReferences(content: string) {
     const mentioned = findMentionedProducts(content, products);
@@ -47,11 +69,11 @@ export default function ChatTab() {
         <div className={styles.referencesTitle}>Product references</div>
         <div className={styles.referenceList}>
           {mentioned.map((product) => (
-            <Link key={product.id} href={productHref(product.id)} className={styles.referenceCard}>
+            <Link key={product.productId} href={productHref(product.productId)} className={styles.referenceCard}>
               <Image src={product.img} alt="" width={44} height={44} unoptimized />
               <span>
                 <strong>{product.name}</strong>
-                <small>{product.category} · {product.price}</small>
+                <small>{product.category} · {formatPriceRange(product)}</small>
               </span>
             </Link>
           ))}
@@ -61,9 +83,14 @@ export default function ChatTab() {
   }
 
   async function openConversation(id: number) {
-    setActiveId(id);
-    const msgs = await api.getMessages(id);
-    setMessages(msgs.filter((m) => m.role !== "system"));
+    try {
+      setActiveId(id);
+      const msgs = await api.getMessages(id);
+      setMessages(msgs.filter((m) => m.role !== "system"));
+      setLoadError(null);
+    } catch {
+      setLoadError("Unable to load that conversation. Please try again.");
+    }
   }
 
   function handleNew() {
@@ -72,12 +99,16 @@ export default function ChatTab() {
   }
 
   async function handleDelete(id: number) {
-    await api.deleteConversation(id);
-    if (activeId === id) {
-      setActiveId(null);
-      setMessages([]);
+    try {
+      await api.deleteConversation(id);
+      if (activeId === id) {
+        setActiveId(null);
+        setMessages([]);
+      }
+      await loadConversations();
+    } catch {
+      setLoadError("Unable to delete that conversation. Please try again.");
     }
-    await loadConversations();
   }
 
   useEffect(() => {
@@ -188,8 +219,48 @@ export default function ChatTab() {
       return;
     }
 
+    if (!ACCEPTED_IMAGE_TYPES.has(file.type)) {
+      setImage(null);
+      setImagePreview(null);
+      return;
+    }
+
     setImage(file);
     setImagePreview(URL.createObjectURL(file));
+  }
+
+  function imageFromTransfer(files: FileList) {
+    return Array.from(files).find((file) => ACCEPTED_IMAGE_TYPES.has(file.type)) ?? null;
+  }
+
+  function hasDraggedFiles(event: DragEvent<HTMLDivElement>) {
+    return Array.from(event.dataTransfer.types).includes("Files");
+  }
+
+  function handleDragEnter(event: DragEvent<HTMLDivElement>) {
+    if (sending || !hasDraggedFiles(event)) return;
+    event.preventDefault();
+    setDragActive(true);
+  }
+
+  function handleDragOver(event: DragEvent<HTMLDivElement>) {
+    if (sending || !hasDraggedFiles(event)) return;
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "copy";
+    setDragActive(true);
+  }
+
+  function handleDragLeave(event: DragEvent<HTMLDivElement>) {
+    const nextTarget = event.relatedTarget;
+    if (nextTarget instanceof Node && event.currentTarget.contains(nextTarget)) return;
+    setDragActive(false);
+  }
+
+  function handleDrop(event: DragEvent<HTMLDivElement>) {
+    event.preventDefault();
+    setDragActive(false);
+    if (sending) return;
+    handleImageChange(imageFromTransfer(event.dataTransfer.files));
   }
 
   return (
@@ -201,12 +272,66 @@ export default function ChatTab() {
         onDelete={handleDelete}
         onNew={handleNew}
       />
-      <div className={styles.main}>
+      <div
+        className={`${styles.main} ${dragActive ? styles.dragActive : ""}`}
+        onDragEnter={handleDragEnter}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+      >
         <div className={styles.chatArea} ref={chatAreaRef}>
+          {dragActive && (
+            <div className={styles.dropHint}>
+              Drop your image to attach it
+            </div>
+          )}
+          {loadError && (
+            <div className={styles.loadError}>
+              {loadError}
+            </div>
+          )}
           {messages.length === 0 && !sending && (
             <div className={styles.emptyChat}>
-              <span className={styles.emptyIcon}>&#128132;</span>
-              Describe your makeup or skincare concern and I&apos;ll recommend products for you!
+              <span className={styles.emptyEyebrow}>AI Beauty Advisor</span>
+              <h2>Start with a beauty goal</h2>
+              <p>
+                Ask for a routine, compare products, or attach a photo for more context.
+                Here are a few places to start.
+              </p>
+
+              <div className={styles.promptGrid}>
+                {STARTER_PROMPTS.map((prompt) => (
+                  <button
+                    key={prompt}
+                    type="button"
+                    className={styles.promptChip}
+                    onClick={() => setInput(prompt)}
+                  >
+                    {prompt}
+                  </button>
+                ))}
+              </div>
+
+              {exploreProducts.length > 0 && (
+                <div className={styles.exploreSection}>
+                  <div className={styles.exploreTitle}>Products to explore</div>
+                  <div className={styles.exploreList}>
+                    {exploreProducts.map((product) => (
+                      <Link
+                        key={product.productId}
+                        href={productHref(product.productId)}
+                        className={styles.exploreProduct}
+                      >
+                        <Image src={product.img} alt="" width={58} height={58} unoptimized />
+                        <span>
+                          <strong>{product.name}</strong>
+                          <small>{product.category} · {formatPriceRange(product)}</small>
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
           {messages.map((m, i) => (
@@ -320,8 +445,12 @@ export default function ChatTab() {
             type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={sending}
+            aria-label="Attach image"
+            title="Attach image"
           >
-            Image
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M8.75 17.25 17.9 8.1a3.18 3.18 0 0 0-4.5-4.5l-9.15 9.15a4.95 4.95 0 0 0 7 7l8.62-8.62a1 1 0 1 0-1.42-1.42l-8.62 8.62a2.95 2.95 0 0 1-4.17-4.17l9.15-9.15a1.18 1.18 0 1 1 1.67 1.67l-9.15 9.15a1 1 0 0 0 1.42 1.42Z" />
+            </svg>
           </button>
           <button className={styles.sendBtn} onClick={handleSend} disabled={sending || !input.trim()}>
             Send

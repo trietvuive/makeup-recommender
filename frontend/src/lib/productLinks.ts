@@ -62,7 +62,7 @@ export function linkifyProducts(markdown: string, products: Product[]) {
         const pattern = new RegExp(`(^|[^\\w])(${escapeRegex(alias)})(?![\\w])`, "gi");
         next = next.replace(pattern, (match, prefix, name) => {
           if (match.includes("](/products/")) return match;
-          return `${prefix}[${escapeMarkdown(name)}](/products/${product.id})`;
+          return `${prefix}[${escapeMarkdown(name)}](${productHref(product.productId)})`;
         });
       }
       return next;
@@ -74,22 +74,22 @@ export function findMentionedProducts(markdown: string, products: Product[]) {
   const text = normalize(markdown);
   if (!text) return [];
 
-  const byId = new Map<string, Product>();
+  const byId = new Map<number, Product>();
   for (const { product, alias } of productMatchers(products)) {
     const normalizedAlias = normalize(alias);
     if (normalizedAlias && text.includes(normalizedAlias)) {
-      byId.set(product.id, product);
+      byId.set(product.productId, product);
     }
   }
 
   return [...byId.values()];
 }
 
-export function productHref(productId: string) {
+export function productHref(productId: number) {
   return `/products/${productId}`;
 }
 
 export function productIdFromHref(href?: string) {
-  const match = href?.match(/^\/products\/([^/?#]+)/);
-  return match ? decodeURIComponent(match[1]) : null;
+  const match = href?.match(/^\/products\/(\d+)(?:[/?#]|$)/);
+  return match ? Number(match[1]) : null;
 }
