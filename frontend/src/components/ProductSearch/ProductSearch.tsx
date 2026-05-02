@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import Image from "next/image";
 import { api, type Product } from "@/lib/api";
+import { productHref } from "@/lib/productLinks";
 import styles from "./ProductSearch.module.scss";
 
 interface Props {
@@ -87,7 +89,7 @@ export default function ProductSearch({ selected, onChange }: Props) {
           <div className={styles.dropdown}>
             {matches.map((p) => (
               <div key={p.id} className={styles.option} onClick={() => add(p.id)}>
-                <img src={p.img} alt="" loading="lazy" />
+                <Image src={p.img} alt="" width={80} height={80} unoptimized />
                 <div className={styles.optionInfo}>
                   <div className={styles.optionName}>{p.name}</div>
                   <div className={styles.optionMeta}>
@@ -107,13 +109,15 @@ export default function ProductSearch({ selected, onChange }: Props) {
         {selectedProducts.map((p) => {
           return (
             <div key={p.id} className={styles.addedItem}>
-              <img src={p.img} alt="" loading="lazy" />
-              <div className={styles.addedInfo}>
-                <div className={styles.addedName}>{p.name}</div>
-                <div className={styles.addedMeta}>
-                  {p.category} &middot; {p.keyIngredients} &middot; {p.price}
+              <a href={productHref(p.id)} className={styles.addedLink}>
+                <Image src={p.img} alt="" width={76} height={76} unoptimized />
+                <div className={styles.addedInfo}>
+                  <div className={styles.addedName}>{p.name}</div>
+                  <div className={styles.addedMeta}>
+                    {p.category} &middot; {p.keyIngredients} &middot; {p.price}
+                  </div>
                 </div>
-              </div>
+              </a>
               <button className={styles.removeBtn} onClick={() => remove(p.id)} title="Remove">
                 &times;
               </button>

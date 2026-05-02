@@ -118,7 +118,6 @@
 .addedItem {
   display: flex;
   align-items: center;
-  gap: 0.7rem;
   background: $surface-warm;
   border: 1px solid $border-light;
   border-radius: $radius;
@@ -128,6 +127,22 @@
   &:hover {
     border-color: $pink;
     box-shadow: $shadow-sm;
+  }
+}
+
+.addedLink {
+  align-items: center;
+  color: inherit;
+  display: flex;
+  flex: 1;
+  gap: 0.7rem;
+  min-width: 0;
+  text-decoration: none;
+
+  &:hover .addedName {
+    color: $rose-dark;
+    text-decoration: underline;
+    text-underline-offset: 2px;
   }
 
   img {

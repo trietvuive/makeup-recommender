@@ -33,6 +33,26 @@
   color: $rose-dark;
   letter-spacing: 0.04em;
   text-transform: lowercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: opacity $transition, transform $transition;
+
+  &:hover {
+    opacity: 0.86;
+    transform: translateY(-1px);
+  }
+}
+
+.logoMark {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.7rem;
+  box-shadow: $shadow-sm;
 }
 
 .nav {

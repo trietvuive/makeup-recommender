@@ -1,0 +1,151 @@
+@use "@/styles/variables" as *;
+
+.page {
+  min-height: 100vh;
+  background: linear-gradient(145deg, $pink-wash 0%, $cream 55%, $pink-light 100%);
+  padding: 2rem;
+}
+
+.backLink {
+  display: inline-flex;
+  color: $rose-dark;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 0 auto 1rem;
+  max-width: 980px;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+}
+
+.card {
+  background: rgba($surface, 0.92);
+  border: 1px solid $border-light;
+  border-radius: 28px;
+  box-shadow: $shadow-lg;
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: minmax(260px, 0.85fr) 1.15fr;
+  margin: 0 auto;
+  max-width: 980px;
+  padding: 2rem;
+
+  @media (max-width: 760px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.imageWrap {
+  align-items: center;
+  background: $pink-light;
+  border-radius: 24px;
+  display: flex;
+  justify-content: center;
+  min-height: 360px;
+  overflow: hidden;
+
+  img {
+    height: 100%;
+    max-height: 420px;
+    object-fit: cover;
+    width: 100%;
+  }
+}
+
+.details {
+  align-self: center;
+
+  h1 {
+    color: $text;
+    font-family: $font-serif;
+    font-size: clamp(2.1rem, 5vw, 3.4rem);
+    font-weight: 500;
+    line-height: 1;
+    margin: 0.35rem 0 1rem;
+  }
+}
+
+.brand {
+  color: $rose;
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.summary {
+  color: $text-soft;
+  font-size: 1rem;
+  line-height: 1.7;
+  margin-bottom: 1.5rem;
+}
+
+.attrs {
+  display: grid;
+  gap: 0.8rem;
+  margin-bottom: 2rem;
+
+  div {
+    background: $surface-warm;
+    border: 1px solid $border-light;
+    border-radius: $radius;
+    padding: 0.9rem 1rem;
+  }
+
+  dt {
+    color: $text-faint;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.25rem;
+    text-transform: uppercase;
+  }
+
+  dd {
+    color: $text;
+    font-size: 0.9rem;
+    margin: 0;
+  }
+}
+
+.purchase {
+  h2 {
+    color: $text;
+    font-family: $font-serif;
+    font-size: 1.35rem;
+    font-weight: 600;
+    margin-bottom: 0.2rem;
+  }
+
+  p {
+    color: $text-soft;
+    font-size: 0.86rem;
+    margin-bottom: 0.85rem;
+  }
+}
+
+.purchaseLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+
+  a {
+    background: $rose;
+    border-radius: $radius-pill;
+    color: white;
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 0.65rem 1rem;
+    text-decoration: none;
+    transition: background $transition, transform $transition;
+
+    &:hover {
+      background: $rose-dark;
+      transform: translateY(-1px);
+    }
+  }
+}

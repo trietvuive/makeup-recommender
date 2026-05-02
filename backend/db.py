@@ -5,6 +5,27 @@ from products_seed import PRODUCTS
 
 DB_PATH = Path(__file__).parent / "data.db"
 
+CATEGORY_IMAGES = {
+    "Blush": "https://images.unsplash.com/photo-1596755389378-c31d21fd1273?w=1000&h=1000&fit=crop",
+    "Cleanser": "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=1000&h=1000&fit=crop",
+    "Concealer": "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=1000&h=1000&fit=crop",
+    "Essence": "https://images.unsplash.com/photo-1601049676869-702ea24cfd58?w=1000&h=1000&fit=crop",
+    "Exfoliant": "https://images.unsplash.com/photo-1617897903246-719242758050?w=1000&h=1000&fit=crop",
+    "Eyeshadow": "https://images.unsplash.com/photo-1583241800698-e8ab01830a07?w=1000&h=1000&fit=crop",
+    "Foundation": "https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=1000&h=1000&fit=crop",
+    "Lip": "https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=1000&h=1000&fit=crop",
+    "Mascara": "https://images.unsplash.com/photo-1591360236480-4ed861025fa1?w=1000&h=1000&fit=crop",
+    "Mask": "https://images.unsplash.com/photo-1596755389378-c31d21fd1273?w=1000&h=1000&fit=crop",
+    "Moisturizer": "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=1000&h=1000&fit=crop",
+    "Primer": "https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=1000&h=1000&fit=crop",
+    "Retinol": "https://images.unsplash.com/photo-1617897903246-719242758050?w=1000&h=1000&fit=crop",
+    "Serum": "https://images.unsplash.com/photo-1615397349754-cfa2066a298e?w=1000&h=1000&fit=crop",
+    "Setting Spray": "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=1000&h=1000&fit=crop",
+    "Sunscreen": "https://images.unsplash.com/photo-1532947974-2e3966a7de28?w=1000&h=1000&fit=crop",
+    "Toner": "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=1000&h=1000&fit=crop",
+    "Treatment": "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=1000&h=1000&fit=crop",
+}
+
 def get_conn() -> sqlite3.Connection:
     conn = sqlite3.connect(str(DB_PATH))
     conn.row_factory = sqlite3.Row
@@ -52,6 +73,16 @@ def init_db():
             conversation_id INTEGER NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
             role            TEXT NOT NULL CHECK(role IN ('user', 'assistant', 'system')),
             content         TEXT NOT NULL,
+            created_at      DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS message_attachments (
+            id              TEXT PRIMARY KEY,
+            message_id      INTEGER NOT NULL REFERENCES messages(id) ON DELETE CASCADE,
+            original_name   TEXT NOT NULL,
+            stored_name     TEXT NOT NULL,
+            mime_type       TEXT NOT NULL,
+            size_bytes      INTEGER NOT NULL,
             created_at      DATETIME DEFAULT CURRENT_TIMESTAMP
         );
 
@@ -106,12 +137,14 @@ def product_from_row(row: sqlite3.Row) -> dict:
     product = dict(row)
     product["keyIngredients"] = product.pop("key_ingredients")
     product.pop("updated_at", None)
+    product["img"] = CATEGORY_IMAGES.get(product["category"], product["img"])
     return product
 
 
 def list_products(query: str | None = None, limit: int = 20) -> list[dict]:
     conn = get_conn()
-    limit = max(1, min(limit, 50))
+    max_limit = 50 if query else 500
+    limit = max(1, min(limit, max_limit))
     if query:
         like = f"%{query.strip()}%"
         rows = conn.execute(
@@ -233,11 +266,31 @@ def list_conversations(profile_id: int) -> list[dict]:
 def get_conversation_messages(conversation_id: int) -> list[dict]:
     conn = get_conn()
     rows = conn.execute(
-        "SELECT role, content, created_at FROM messages WHERE conversation_id = ? ORDER BY created_at",
+        "SELECT id, role, content, created_at FROM messages WHERE conversation_id = ? ORDER BY created_at",
         (conversation_id,)
     ).fetchall()
+    messages = [dict(r) for r in rows]
+    if messages:
+        message_ids = [m["id"] for m in messages]
+        placeholders = ",".join("?" for _ in message_ids)
+        attachment_rows = conn.execute(
+            f"""
+            SELECT id, message_id, original_name, mime_type, size_bytes, created_at
+            FROM message_attachments
+            WHERE message_id IN ({placeholders})
+            ORDER BY created_at
+            """,
+            message_ids,
+        ).fetchall()
+        by_message_id = {mid: [] for mid in message_ids}
+        for row in attachment_rows:
+            attachment = dict(row)
+            attachment["url"] = f"/api/attachments/{attachment['id']}"
+            by_message_id[attachment["message_id"]].append(attachment)
+        for message in messages:
+            message["attachments"] = by_message_id.get(message["id"], [])
     conn.close()
-    return [dict(r) for r in rows]
+    return messages
 
 
 def add_message(conversation_id: int, role: str, content: str) -> dict:
@@ -251,6 +304,56 @@ def add_message(conversation_id: int, role: str, content: str) -> dict:
     row = conn.execute("SELECT * FROM messages WHERE id = ?", (mid,)).fetchone()
     conn.close()
     return dict(row)
+
+
+def add_message_attachment(
+    message_id: int,
+    attachment_id: str,
+    original_name: str,
+    stored_name: str,
+    mime_type: str,
+    size_bytes: int,
+) -> dict:
+    conn = get_conn()
+    conn.execute(
+        """
+        INSERT INTO message_attachments (
+            id, message_id, original_name, stored_name, mime_type, size_bytes
+        ) VALUES (?, ?, ?, ?, ?, ?)
+        """,
+        (attachment_id, message_id, original_name, stored_name, mime_type, size_bytes),
+    )
+    conn.commit()
+    row = conn.execute(
+        """
+        SELECT id, message_id, original_name, stored_name, mime_type, size_bytes, created_at
+        FROM message_attachments
+        WHERE id = ?
+        """,
+        (attachment_id,),
+    ).fetchone()
+    conn.close()
+    attachment = dict(row)
+    attachment["url"] = f"/api/attachments/{attachment['id']}"
+    return attachment
+
+
+def get_attachment(attachment_id: str) -> dict | None:
+    conn = get_conn()
+    row = conn.execute(
+        """
+        SELECT id, message_id, original_name, stored_name, mime_type, size_bytes, created_at
+        FROM message_attachments
+        WHERE id = ?
+        """,
+        (attachment_id,),
+    ).fetchone()
+    conn.close()
+    if not row:
+        return None
+    attachment = dict(row)
+    attachment["url"] = f"/api/attachments/{attachment['id']}"
+    return attachment
 
 
 def delete_conversation(conversation_id: int):

@@ -14,7 +14,15 @@ export default function Home() {
     <div className={styles.app}>
       <header className={styles.header}>
         <div className={styles.headerInner}>
-          <span className={styles.brand}>glow</span>
+          <button
+            type="button"
+            className={styles.brand}
+            onClick={() => setTab("profile")}
+            aria-label="Go to profile home"
+          >
+            <img src="/logo.svg" alt="" className={styles.logoMark} />
+            glow
+          </button>
           <nav className={styles.nav}>
             <button
               className={`${styles.navItem} ${tab === "profile" ? styles.active : ""}`}
