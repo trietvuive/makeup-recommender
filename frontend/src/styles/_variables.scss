@@ -1,10 +1,34 @@
-$pink: #e8a0bf;
-$pink-light: #f5d5e0;
-$pink-dark: #c76b98;
-$bg: #fdf6f9;
+// Glossier-inspired pink palette — high contrast, beauty-forward
+$pink: #f5c6c6;
+$pink-light: #fce4e4;
+$pink-wash: #fff0f0;
+$pink-deep: #e8999a;
+$rose: #d4636a;
+$rose-dark: #b8484f;
+$blush: #f9d4d4;
+
+$cream: #fffaf9;
+$cream-dark: #faf0ee;
 $surface: #ffffff;
-$text: #3a2434;
-$text-muted: #8a7080;
-$border: #f0dce6;
-$radius: 12px;
-$shadow: 0 2px 12px rgba(200, 107, 152, 0.1);
+$surface-warm: #fff7f5;
+
+$text: #2d1f1f;
+$text-soft: #6b5252;
+$text-faint: #a08888;
+
+$border: #f0d4d4;
+$border-light: #f8e4e4;
+
+$radius-sm: 8px;
+$radius: 14px;
+$radius-lg: 20px;
+$radius-pill: 100px;
+
+$shadow-sm: 0 1px 4px rgba(212, 99, 106, 0.06);
+$shadow: 0 4px 24px rgba(212, 99, 106, 0.1);
+$shadow-lg: 0 8px 40px rgba(212, 99, 106, 0.14);
+
+$font-serif: "Cormorant Garamond", "Georgia", serif;
+$font-sans: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+$transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);

@@ -1,55 +1,207 @@
 @use "@/styles/variables" as *;
 
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+// ── Header / Nav ──────────────────────────
+
 .header {
-  background: linear-gradient(135deg, $pink-dark, $pink);
-  color: white;
-  padding: 1rem 1.5rem;
-  text-align: center;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba($cream, 0.88);
+  backdrop-filter: blur(16px) saturate(1.4);
+  border-bottom: 1px solid $border-light;
+}
+
+.headerInner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0.85rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand {
+  font-family: $font-serif;
+  font-size: 1.7rem;
+  font-weight: 500;
+  color: $rose-dark;
+  letter-spacing: 0.04em;
+  text-transform: lowercase;
+}
+
+.nav {
+  display: flex;
+  gap: 0.35rem;
+  background: $pink-light;
+  padding: 4px;
+  border-radius: $radius-pill;
+}
+
+.navItem {
+  padding: 0.5rem 1.4rem;
+  border: none;
+  background: none;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: $text-soft;
+  cursor: pointer;
+  border-radius: $radius-pill;
+  transition: all $transition;
+  letter-spacing: 0.02em;
+
+  &:hover {
+    color: $text;
+  }
+
+  &.active {
+    background: $surface;
+    color: $rose-dark;
+    box-shadow: $shadow-sm;
+    font-weight: 600;
+  }
+}
+
+// ── Hero (profile) ────────────────────────
+
+.hero {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3rem;
+  padding: 3rem 2.5rem 2.5rem;
+  background: linear-gradient(145deg, $pink-wash 0%, $pink-light 50%, $blush 100%);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: -60px;
+    right: -60px;
+    width: 260px;
+    height: 260px;
+    background: radial-gradient(circle, rgba($pink, 0.5) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    bottom: -40px;
+    left: -40px;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba($pink-deep, 0.2) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    text-align: center;
+    padding: 2.5rem 1.5rem 2rem;
+  }
+}
+
+.heroContent {
+  max-width: 480px;
+  position: relative;
+  z-index: 1;
 
   h1 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
+    font-family: $font-serif;
+    font-size: clamp(2rem, 4vw, 2.8rem);
+    font-weight: 500;
+    color: $text;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    margin-bottom: 0.85rem;
   }
 
   p {
-    font-size: 0.85rem;
-    opacity: 0.85;
-    margin-top: 0.2rem;
+    font-size: 0.95rem;
+    color: $text-soft;
+    line-height: 1.7;
   }
 }
 
-.tabs {
-  display: flex;
-  background: $surface;
-  border-bottom: 2px solid $border;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
-
-.tabBtn {
-  flex: 1;
-  padding: 0.85rem;
-  border: none;
-  background: none;
-  font-size: 0.95rem;
+.heroTag {
+  display: inline-block;
+  font-size: 0.68rem;
   font-weight: 600;
-  color: $text-muted;
-  cursor: pointer;
-  transition: all 0.2s;
-  border-bottom: 3px solid transparent;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: $rose;
+  background: rgba($surface, 0.7);
+  padding: 0.3rem 0.85rem;
+  border-radius: $radius-pill;
+  margin-bottom: 1rem;
+  border: 1px solid $border;
+}
 
-  &.active {
-    color: $pink-dark;
-    border-bottom-color: $pink-dark;
-    background: $pink-light;
+.heroVisual {
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+
+  @media (max-width: 768px) {
+    display: none;
   }
 }
 
-.content {
+.heroImages {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-end;
+}
+
+.heroImg1 {
+  width: 180px;
+  height: 240px;
+  object-fit: cover;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-lg;
+  border: 3px solid rgba($surface, 0.8);
+}
+
+.heroImg2 {
+  width: 140px;
+  height: 190px;
+  object-fit: cover;
+  border-radius: $radius-lg;
+  box-shadow: $shadow;
+  border: 3px solid rgba($surface, 0.8);
+  margin-bottom: 1.5rem;
+}
+
+// ── Hero mini (chat) ──────────────────────
+
+.heroMini {
+  text-align: center;
+  padding: 2rem 2rem 1.25rem;
+  background: linear-gradient(180deg, $pink-wash 0%, $cream 100%);
+
+  h1 {
+    font-family: $font-serif;
+    font-size: clamp(1.5rem, 3vw, 2.2rem);
+    font-weight: 400;
+    color: $text;
+    line-height: 1.2;
+  }
+}
+
+// ── Main ──────────────────────────────────
+
+.main {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  flex: 1;
   overflow: hidden;
 }

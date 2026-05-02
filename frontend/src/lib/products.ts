@@ -46,6 +46,65 @@ export const PRODUCTS: Product[] = [
   { id: "cosrx-snail-mucin", name: "COSRX Advanced Snail 96 Mucin Power Essence", brand: "COSRX", category: "Essence", type: "Hydrating essence", keyIngredients: "96% snail mucin", price: "Mid-range", img: "https://images.unsplash.com/photo-1601049676869-702ea24cfd58?w=80&h=80&fit=crop" },
   { id: "the-ordinary-aha-bha", name: "The Ordinary AHA 30% + BHA 2% Peeling Solution", brand: "The Ordinary", category: "Exfoliant", type: "Chemical peel", keyIngredients: "Glycolic acid 30%, salicylic acid 2%", price: "Drugstore", img: "https://images.unsplash.com/photo-1617897903246-719242758050?w=80&h=80&fit=crop" },
   { id: "drunk-elephant-protini", name: "Drunk Elephant Protini Polypeptide Cream", brand: "Drunk Elephant", category: "Moisturizer", type: "Peptide moisturizer", keyIngredients: "Signal peptides, amino acids", price: "Luxury", img: "https://images.unsplash.com/photo-1570194065650-d99fb4a38691?w=80&h=80&fit=crop" },
+
+  // Korean skincare — Sulwhasoo
+  { id: "sulwhasoo-first-care", name: "Sulwhasoo First Care Activating Serum", brand: "Sulwhasoo", category: "Serum", type: "Activating serum", keyIngredients: "JAUM Activator, Korean red pine, peony", price: "Luxury", img: "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=80&h=80&fit=crop" },
+  { id: "sulwhasoo-overnight-mask", name: "Sulwhasoo Overnight Vitalizing Mask", brand: "Sulwhasoo", category: "Mask", type: "Overnight sleeping mask", keyIngredients: "Korean ginseng, honey", price: "Luxury", img: "https://images.unsplash.com/photo-1596755389378-c31d21fd1273?w=80&h=80&fit=crop" },
+  { id: "sulwhasoo-essential-comfort", name: "Sulwhasoo Essential Comfort Moisturizing Cream", brand: "Sulwhasoo", category: "Moisturizer", type: "Rich moisturizer", keyIngredients: "Korean ginseng, apricot kernel oil", price: "Luxury", img: "https://images.unsplash.com/photo-1611930022073-b7a4ba5fcccd?w=80&h=80&fit=crop" },
+  { id: "sulwhasoo-gentle-cleanser", name: "Sulwhasoo Gentle Cleansing Foam", brand: "Sulwhasoo", category: "Cleanser", type: "Foam cleanser", keyIngredients: "Lotus flower, lily extract", price: "Luxury", img: "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=80&h=80&fit=crop" },
+  { id: "sulwhasoo-concentrated-ginseng", name: "Sulwhasoo Concentrated Ginseng Renewing Cream", brand: "Sulwhasoo", category: "Moisturizer", type: "Anti-aging cream", keyIngredients: "Concentrated ginseng, ginsenoside", price: "Luxury", img: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=80&h=80&fit=crop" },
+
+  // Korean skincare — Laneige
+  { id: "laneige-water-sleeping-mask", name: "Laneige Water Sleeping Mask", brand: "Laneige", category: "Mask", type: "Overnight sleeping mask", keyIngredients: "Hydro Ionized Mineral Water, squalane", price: "Mid-range", img: "https://images.unsplash.com/photo-1596755389378-c31d21fd1273?w=80&h=80&fit=crop" },
+  { id: "laneige-cream-skin-refiner", name: "Laneige Cream Skin Cerapeptide Refiner", brand: "Laneige", category: "Toner", type: "Milky toner", keyIngredients: "Ceramides, peptides", price: "Mid-range", img: "https://images.unsplash.com/photo-1601049676869-702ea24cfd58?w=80&h=80&fit=crop" },
+  { id: "laneige-water-bank-moisturizer", name: "Laneige Water Bank Blue Hyaluronic Cream", brand: "Laneige", category: "Moisturizer", type: "Gel-cream moisturizer", keyIngredients: "Blue hyaluronic acid, squalane", price: "Mid-range", img: "https://images.unsplash.com/photo-1611930022073-b7a4ba5fcccd?w=80&h=80&fit=crop" },
+
+  // Korean skincare — Innisfree
+  { id: "innisfree-green-tea-seed", name: "Innisfree Green Tea Seed Serum", brand: "Innisfree", category: "Serum", type: "Hydrating serum", keyIngredients: "Jeju green tea, green tea seed oil", price: "Drugstore", img: "https://images.unsplash.com/photo-1615397349754-cfa2066a298e?w=80&h=80&fit=crop" },
+  { id: "innisfree-volcanic-clay-mask", name: "Innisfree Super Volcanic Pore Clay Mask", brand: "Innisfree", category: "Mask", type: "Clay mask", keyIngredients: "Jeju volcanic cluster, AHA", price: "Drugstore", img: "https://images.unsplash.com/photo-1617897903246-719242758050?w=80&h=80&fit=crop" },
+  { id: "innisfree-daily-sunscreen", name: "Innisfree Daily UV Defense Sunscreen SPF 36", brand: "Innisfree", category: "Sunscreen", type: "Daily sunscreen", keyIngredients: "Sunflower oil, cica", price: "Drugstore", img: "https://images.unsplash.com/photo-1532947974-2e3966a7de28?w=80&h=80&fit=crop" },
+
+  // Korean skincare — Missha
+  { id: "missha-time-revolution-essence", name: "Missha Time Revolution The First Treatment Essence RX", brand: "Missha", category: "Essence", type: "First treatment essence", keyIngredients: "Fermented yeast extract, bifida ferment", price: "Mid-range", img: "https://images.unsplash.com/photo-1601049676869-702ea24cfd58?w=80&h=80&fit=crop" },
+  { id: "missha-sunscreen", name: "Missha All Around Safe Block Soft Finish Sun Milk SPF 50+", brand: "Missha", category: "Sunscreen", type: "Lightweight sunscreen", keyIngredients: "Sebum control, botanical extracts", price: "Drugstore", img: "https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=80&h=80&fit=crop" },
+
+  // Korean skincare — Etude House
+  { id: "etude-soon-jung-toner", name: "Etude SoonJung pH 5.5 Relief Toner", brand: "Etude", category: "Toner", type: "Gentle relief toner", keyIngredients: "Panthenol, madecassoside", price: "Drugstore", img: "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=80&h=80&fit=crop" },
+  { id: "etude-soon-jung-barrier-cream", name: "Etude SoonJung 2x Barrier Intensive Cream", brand: "Etude", category: "Moisturizer", type: "Barrier cream", keyIngredients: "Panthenol 2%, madecassoside", price: "Drugstore", img: "https://images.unsplash.com/photo-1570194065650-d99fb4a38691?w=80&h=80&fit=crop" },
+
+  // Korean skincare — Banila Co
+  { id: "banila-co-clean-it-zero", name: "Banila Co Clean It Zero Cleansing Balm", brand: "Banila Co", category: "Cleanser", type: "Oil cleansing balm", keyIngredients: "Acerola, vitamin C, hot springs water", price: "Mid-range", img: "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=80&h=80&fit=crop" },
+
+  // Korean skincare — Beauty of Joseon
+  { id: "boj-glow-serum", name: "Beauty of Joseon Glow Serum: Propolis + Niacinamide", brand: "Beauty of Joseon", category: "Serum", type: "Brightening serum", keyIngredients: "Propolis 60%, niacinamide 2%", price: "Drugstore", img: "https://images.unsplash.com/photo-1615397349754-cfa2066a298e?w=80&h=80&fit=crop" },
+  { id: "boj-relief-sunscreen", name: "Beauty of Joseon Relief Sun: Rice + Probiotics SPF 50+", brand: "Beauty of Joseon", category: "Sunscreen", type: "Lightweight sunscreen", keyIngredients: "Rice bran, probiotics", price: "Drugstore", img: "https://images.unsplash.com/photo-1532947974-2e3966a7de28?w=80&h=80&fit=crop" },
+  { id: "boj-dynasty-cream", name: "Beauty of Joseon Dynasty Cream", brand: "Beauty of Joseon", category: "Moisturizer", type: "Nourishing cream", keyIngredients: "Rice bran water, ginseng", price: "Drugstore", img: "https://images.unsplash.com/photo-1611930022073-b7a4ba5fcccd?w=80&h=80&fit=crop" },
+
+  // Korean skincare — COSRX (additional)
+  { id: "cosrx-aha-bha-toner", name: "COSRX AHA/BHA Clarifying Treatment Toner", brand: "COSRX", category: "Toner", type: "Exfoliating toner", keyIngredients: "AHA, BHA, mineral water", price: "Drugstore", img: "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=80&h=80&fit=crop" },
+  { id: "cosrx-acne-pimple-patch", name: "COSRX Acne Pimple Master Patch", brand: "COSRX", category: "Treatment", type: "Hydrocolloid patch", keyIngredients: "Hydrocolloid", price: "Drugstore", img: "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=80&h=80&fit=crop" },
+  { id: "cosrx-low-ph-cleanser", name: "COSRX Low pH Good Morning Gel Cleanser", brand: "COSRX", category: "Cleanser", type: "Gel cleanser", keyIngredients: "BHA 0.1%, tea tree oil", price: "Drugstore", img: "https://images.unsplash.com/photo-1631729371254-42c2892f0e6e?w=80&h=80&fit=crop" },
+  { id: "cosrx-birch-sap-moisturizer", name: "COSRX Oil-Free Ultra Moisturizing Lotion with Birch Sap", brand: "COSRX", category: "Moisturizer", type: "Lightweight moisturizer", keyIngredients: "Birch sap 70%, hyaluronic acid", price: "Drugstore", img: "https://images.unsplash.com/photo-1570194065650-d99fb4a38691?w=80&h=80&fit=crop" },
+
+  // Korean skincare — SKIN1004
+  { id: "skin1004-centella-ampoule", name: "SKIN1004 Madagascar Centella Ampoule", brand: "SKIN1004", category: "Serum", type: "Soothing ampoule", keyIngredients: "Madagascar centella asiatica", price: "Drugstore", img: "https://images.unsplash.com/photo-1615397349754-cfa2066a298e?w=80&h=80&fit=crop" },
+
+  // Korean skincare — Purito
+  { id: "purito-centella-serum", name: "Purito Centella Unscented Serum", brand: "Purito", category: "Serum", type: "Calming serum", keyIngredients: "Centella asiatica 49%, niacinamide 3%", price: "Drugstore", img: "https://images.unsplash.com/photo-1601049676869-702ea24cfd58?w=80&h=80&fit=crop" },
+
+  // Korean skincare — Klairs
+  { id: "klairs-supple-toner", name: "Klairs Supple Preparation Unscented Toner", brand: "Klairs", category: "Toner", type: "Hydrating toner", keyIngredients: "Hyaluronic acid, centella asiatica", price: "Drugstore", img: "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=80&h=80&fit=crop" },
+  { id: "klairs-vitamin-c-serum", name: "Klairs Freshly Juiced Vitamin C Serum", brand: "Klairs", category: "Serum", type: "Vitamin C serum", keyIngredients: "5% ascorbic acid, centella asiatica", price: "Mid-range", img: "https://images.unsplash.com/photo-1617897903246-719242758050?w=80&h=80&fit=crop" },
+
+  // Korean skincare — Dr. Jart+
+  { id: "drjart-ceramidin-cream", name: "Dr. Jart+ Ceramidin Cream", brand: "Dr. Jart+", category: "Moisturizer", type: "Barrier cream", keyIngredients: "5-Cera Complex, panthenol", price: "Mid-range", img: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=80&h=80&fit=crop" },
+  { id: "drjart-cicapair-tiger-grass", name: "Dr. Jart+ Cicapair Tiger Grass Color Correcting Treatment SPF 30", brand: "Dr. Jart+", category: "Treatment", type: "Color correcting cream", keyIngredients: "Centella asiatica, niacinamide", price: "Mid-range", img: "https://images.unsplash.com/photo-1596755389378-c31d21fd1273?w=80&h=80&fit=crop" },
+
+  // Korean skincare — Amorepacific
+  { id: "amorepacific-vintage-essence", name: "Amorepacific Vintage Single Extract Essence", brand: "Amorepacific", category: "Essence", type: "Fermented essence", keyIngredients: "Fermented green tea AMOREPACIFIC", price: "Luxury", img: "https://images.unsplash.com/photo-1601049676869-702ea24cfd58?w=80&h=80&fit=crop" },
+
+  // Korean skincare — Torriden
+  { id: "torriden-dive-in-serum", name: "Torriden DIVE-IN Low Molecular Hyaluronic Acid Serum", brand: "Torriden", category: "Serum", type: "Hydrating serum", keyIngredients: "5 types of hyaluronic acid, panthenol", price: "Drugstore", img: "https://images.unsplash.com/photo-1615397349754-cfa2066a298e?w=80&h=80&fit=crop" },
 ];
 
 export const PRODUCT_MAP = Object.fromEntries(PRODUCTS.map((p) => [p.id, p]));

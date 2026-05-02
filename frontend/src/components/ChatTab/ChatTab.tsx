@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { api, type Conversation, type Message } from "@/lib/api";
 import ConversationSidebar from "@/components/ConversationSidebar/ConversationSidebar";
 import styles from "./ChatTab.module.scss";
@@ -120,7 +122,11 @@ export default function ChatTab() {
                   : styles.error
               }`}
             >
-              {m.content}
+              {m.role === "assistant" ? (
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{m.content}</ReactMarkdown>
+              ) : (
+                m.content
+              )}
             </div>
           ))}
           {sending && <div className={styles.typing}>Thinking...</div>}

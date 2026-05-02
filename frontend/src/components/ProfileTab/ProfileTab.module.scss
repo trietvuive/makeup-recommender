@@ -3,70 +3,248 @@
 .container {
   flex: 1;
   overflow-y: auto;
-  padding: 1.5rem;
-  max-width: 700px;
+  padding: 0 2rem 3rem;
+  max-width: 960px;
   margin: 0 auto;
   width: 100%;
-
-  h2 {
-    font-size: 1.15rem;
-    margin-bottom: 0.5rem;
-  }
 }
 
 .loading {
-  padding: 2rem;
-  text-align: center;
-  color: $text-muted;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem;
 }
 
-.notice {
-  font-size: 0.78rem;
-  color: $text-muted;
-  font-style: italic;
-  margin-bottom: 1.25rem;
+.spinner {
+  width: 28px;
+  height: 28px;
+  border: 2.5px solid $pink-light;
+  border-top-color: $rose;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
 }
 
-.subnotice {
-  font-size: 0.78rem;
-  color: $text-muted;
-  font-style: italic;
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+// ── Card grid ─────────────────────────────
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+
+  @media (max-width: 700px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.card {
+  background: $surface;
+  border: 1px solid $border-light;
+  border-radius: $radius-lg;
+  padding: 1.75rem;
+  transition: border-color $transition, box-shadow $transition;
+  position: relative;
+  overflow: visible;
+
+  &:focus-within {
+    z-index: 10;
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, $pink, $rose, $pink-deep);
+    opacity: 0;
+    transition: opacity $transition;
+  }
+
+  &:hover {
+    border-color: $pink;
+    box-shadow: $shadow;
+
+    &::after {
+      opacity: 1;
+    }
+  }
+}
+
+.cardWide {
+  grid-column: 1 / -1;
+}
+
+.cardIcon {
+  font-size: 1.5rem;
   margin-bottom: 0.5rem;
+  line-height: 1;
 }
 
-.formGroup {
-  margin-bottom: 1rem;
+.cardTitle {
+  font-family: $font-serif;
+  font-size: 1.35rem;
+  font-weight: 500;
+  color: $text;
+  margin-bottom: 0.3rem;
+  letter-spacing: -0.01em;
+}
+
+.cardDesc {
+  font-size: 0.85rem;
+  color: $text-soft;
+  margin-bottom: 1.25rem;
+  line-height: 1.55;
+}
+
+// ── Fields ────────────────────────────────
+
+.fieldRow {
+  display: flex;
+  gap: 1rem;
+
+  @media (max-width: 500px) {
+    flex-direction: column;
+  }
+
+  .field {
+    flex: 1;
+  }
+}
+
+.prefsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.field {
+  margin-bottom: 1.1rem;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
 
   label {
     display: block;
-    font-size: 0.82rem;
+    font-size: 0.72rem;
     font-weight: 600;
-    color: $text-muted;
-    margin-bottom: 0.3rem;
+    color: $text-faint;
     text-transform: uppercase;
-    letter-spacing: 0.03em;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.45rem;
   }
 
   input,
-  select,
-  textarea {
+  select {
     width: 100%;
-    padding: 0.6rem 0.75rem;
-    border: 1.5px solid $border;
-    border-radius: 8px;
-    font-size: 0.9rem;
-    background: $surface;
+    padding: 0.7rem 0.9rem;
+    border: 1px solid $border;
+    border-radius: $radius;
+    font-size: 0.88rem;
+    background: $surface-warm;
     color: $text;
-    font-family: inherit;
+    transition: border-color $transition, box-shadow $transition;
+
+    &::placeholder {
+      color: $text-faint;
+    }
 
     &:focus {
       outline: none;
-      border-color: $pink;
+      border-color: $rose;
+      box-shadow: 0 0 0 3px rgba($rose, 0.1);
     }
   }
 
-  textarea {
-    resize: vertical;
-    min-height: 70px;
+  select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%23a08888' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.9rem center;
+    padding-right: 2.4rem;
   }
+
+  textarea {
+    width: 100%;
+    padding: 0.7rem 0.9rem;
+    border: 1px solid $border;
+    border-radius: $radius;
+    font-size: 0.88rem;
+    background: $surface-warm;
+    color: $text;
+    resize: vertical;
+    min-height: 56px;
+    font-family: inherit;
+    line-height: 1.5;
+    transition: border-color $transition, box-shadow $transition;
+
+    &::placeholder {
+      color: $text-faint;
+    }
+
+    &:focus {
+      outline: none;
+      border-color: $rose;
+      box-shadow: 0 0 0 3px rgba($rose, 0.1);
+    }
+  }
+}
+
+// ── Pill selectors ────────────────────────
+
+.pillGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.pill {
+  padding: 0.4rem 0.9rem;
+  border: 1px solid $border;
+  border-radius: $radius-pill;
+  background: $surface-warm;
+  color: $text-soft;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all $transition;
+  white-space: nowrap;
+
+  &:hover {
+    border-color: $pink-deep;
+    color: $text;
+    background: $pink-wash;
+  }
+}
+
+.pillActive {
+  background: $rose;
+  border-color: $rose;
+  color: white;
+
+  &:hover {
+    background: $rose-dark;
+    border-color: $rose-dark;
+    color: white;
+  }
+}
+
+// ── Footnote ──────────────────────────────
+
+.footnote {
+  text-align: center;
+  font-size: 0.75rem;
+  color: $text-faint;
+  margin-top: 2rem;
+  letter-spacing: 0.02em;
 }

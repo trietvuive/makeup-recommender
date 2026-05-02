@@ -30,7 +30,7 @@ const SELECT_OPTIONS = {
 
 export default function ProfileTab() {
   const [profile, setProfile] = useState<ProfileData | null>(null);
-  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+  const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   useEffect(() => {
     api.getProfile().then(setProfile);
@@ -57,87 +57,169 @@ export default function ProfileTab() {
     save(next);
   }
 
-  if (!profile) return <div className={styles.loading}>Loading profile...</div>;
+  if (!profile) {
+    return (
+      <div className={styles.loading}>
+        <div className={styles.spinner} />
+      </div>
+    );
+  }
 
   return (
     <div className={styles.container}>
-      <h2>Tell us about yourself</h2>
-      <p className={styles.notice}>
-        All fields are optional. Your profile is saved to the server and sent as context with every
-        chat message.
+      <div className={styles.grid}>
+        {/* About You */}
+        <section className={styles.card}>
+          <div className={styles.cardIcon}>&#9825;</div>
+          <h3 className={styles.cardTitle}>About You</h3>
+          <p className={styles.cardDesc}>
+            Basic details help us personalize every recommendation to your unique needs.
+          </p>
+
+          <div className={styles.fieldRow}>
+            <div className={styles.field}>
+              <label>Age</label>
+              <input
+                type="number"
+                min={10}
+                max={120}
+                placeholder="28"
+                value={profile.age || ""}
+                onChange={(e) => update("age", e.target.value)}
+              />
+            </div>
+            <div className={styles.field}>
+              <label>Gender</label>
+              <select value={profile.gender || ""} onChange={(e) => update("gender", e.target.value)}>
+                <option value="">Select</option>
+                {SELECT_OPTIONS.gender.map((o) => <option key={o}>{o}</option>)}
+              </select>
+            </div>
+          </div>
+
+          <div className={styles.field}>
+            <label>Living Climate</label>
+            <select value={profile.climate || ""} onChange={(e) => update("climate", e.target.value)}>
+              <option value="">Select your climate</option>
+              {SELECT_OPTIONS.climate.map((o) => <option key={o}>{o}</option>)}
+            </select>
+          </div>
+
+          <div className={styles.field}>
+            <label>Allergies &amp; Sensitivities</label>
+            <textarea
+              placeholder="fragrance, parabens, latex, nickel..."
+              value={profile.allergies || ""}
+              onChange={(e) => update("allergies", e.target.value)}
+              rows={2}
+            />
+          </div>
+        </section>
+
+        {/* Your Skin */}
+        <section className={styles.card}>
+          <div className={styles.cardIcon}>&#10024;</div>
+          <h3 className={styles.cardTitle}>Your Skin</h3>
+          <p className={styles.cardDesc}>
+            Understanding your skin means we&apos;ll never recommend something that won&apos;t work for you.
+          </p>
+
+          <div className={styles.field}>
+            <label>Skin Type</label>
+            <div className={styles.pillGroup}>
+              {SELECT_OPTIONS.skin_type.map((o) => (
+                <button
+                  key={o}
+                  className={`${styles.pill} ${profile.skin_type === o ? styles.pillActive : ""}`}
+                  onClick={() => update("skin_type", profile.skin_type === o ? "" : o)}
+                >
+                  {o}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className={styles.field}>
+            <label>Skin Tone</label>
+            <div className={styles.pillGroup}>
+              {SELECT_OPTIONS.skin_tone.map((o) => (
+                <button
+                  key={o}
+                  className={`${styles.pill} ${profile.skin_tone === o ? styles.pillActive : ""}`}
+                  onClick={() => update("skin_tone", profile.skin_tone === o ? "" : o)}
+                >
+                  {o}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className={styles.field}>
+            <label>Undertone</label>
+            <div className={styles.pillGroup}>
+              {SELECT_OPTIONS.undertone.map((o) => (
+                <button
+                  key={o}
+                  className={`${styles.pill} ${profile.undertone === o ? styles.pillActive : ""}`}
+                  onClick={() => update("undertone", profile.undertone === o ? "" : o)}
+                >
+                  {o}
+                </button>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Your Routine */}
+        <section className={`${styles.card} ${styles.cardWide}`}>
+          <div className={styles.cardIcon}>&#128139;</div>
+          <h3 className={styles.cardTitle}>Your Routine</h3>
+          <p className={styles.cardDesc}>
+            Add the products you currently love so we can build on what&apos;s already working for you.
+          </p>
+          <ProductSearch selected={profile.products} onChange={updateProducts} />
+        </section>
+
+        {/* Preferences — now full-width */}
+        <section className={`${styles.card} ${styles.cardWide}`}>
+          <div className={styles.cardIcon}>&#127800;</div>
+          <h3 className={styles.cardTitle}>Preferences</h3>
+          <p className={styles.cardDesc}>
+            Your budget, your values, and anything else that matters to you.
+          </p>
+
+          <div className={styles.prefsGrid}>
+            <div className={styles.field}>
+              <label>Budget</label>
+              <div className={styles.pillGroup}>
+                {SELECT_OPTIONS.budget.map((o) => (
+                  <button
+                    key={o}
+                    className={`${styles.pill} ${profile.budget === o ? styles.pillActive : ""}`}
+                    onClick={() => update("budget", profile.budget === o ? "" : o)}
+                  >
+                    {o}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className={styles.field}>
+              <label>Anything else?</label>
+              <textarea
+                placeholder="Vegan only, cruelty-free, brands you love or avoid..."
+                value={profile.extra || ""}
+                onChange={(e) => update("extra", e.target.value)}
+                rows={3}
+              />
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <p className={styles.footnote}>
+        Everything auto-saves. Your profile is used as context when chatting with our AI advisor.
       </p>
-
-      <div className={styles.formGroup}>
-        <label>Age</label>
-        <input
-          type="number"
-          min={10}
-          max={120}
-          placeholder="e.g. 28"
-          value={profile.age || ""}
-          onChange={(e) => update("age", e.target.value)}
-        />
-      </div>
-
-      {(
-        [
-          ["gender", "Gender"],
-          ["skin_type", "Skin Type"],
-          ["skin_tone", "Skin Tone"],
-          ["undertone", "Undertone"],
-          ["climate", "Living Climate"],
-        ] as const
-      ).map(([field, label]) => (
-        <div className={styles.formGroup} key={field}>
-          <label>{label}</label>
-          <select
-            value={profile[field] || ""}
-            onChange={(e) => update(field, e.target.value)}
-          >
-            <option value="">-- select --</option>
-            {SELECT_OPTIONS[field].map((o) => (
-              <option key={o}>{o}</option>
-            ))}
-          </select>
-        </div>
-      ))}
-
-      <div className={styles.formGroup}>
-        <label>Known Allergies / Sensitivities</label>
-        <textarea
-          placeholder="e.g. fragrance, parabens, latex, nickel..."
-          value={profile.allergies || ""}
-          onChange={(e) => update("allergies", e.target.value)}
-        />
-      </div>
-
-      <div className={styles.formGroup}>
-        <label>Current Skincare / Makeup Routine</label>
-        <p className={styles.subnotice}>Search and add products you currently use.</p>
-        <ProductSearch selected={profile.products} onChange={updateProducts} />
-      </div>
-
-      <div className={styles.formGroup}>
-        <label>Budget Preference</label>
-        <select
-          value={profile.budget || ""}
-          onChange={(e) => update("budget", e.target.value)}
-        >
-          <option value="">-- select --</option>
-          {SELECT_OPTIONS.budget.map((o) => (
-            <option key={o}>{o}</option>
-          ))}
-        </select>
-      </div>
-
-      <div className={styles.formGroup}>
-        <label>Anything Else</label>
-        <textarea
-          placeholder="Vegan-only products, cruelty-free, specific brands you love or hate..."
-          value={profile.extra || ""}
-          onChange={(e) => update("extra", e.target.value)}
-        />
-      </div>
     </div>
   );
 }

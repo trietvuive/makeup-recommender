@@ -11,31 +11,57 @@ export default function Home() {
   const [tab, setTab] = useState<Tab>("profile");
 
   return (
-    <>
+    <div className={styles.app}>
       <header className={styles.header}>
-        <h1>Makeup Advisor</h1>
-        <p>AI-powered product recommendations, tailored to you</p>
+        <div className={styles.headerInner}>
+          <span className={styles.brand}>glow</span>
+          <nav className={styles.nav}>
+            <button
+              className={`${styles.navItem} ${tab === "profile" ? styles.active : ""}`}
+              onClick={() => setTab("profile")}
+            >
+              Your Profile
+            </button>
+            <button
+              className={`${styles.navItem} ${tab === "chat" ? styles.active : ""}`}
+              onClick={() => setTab("chat")}
+            >
+              Get Advice
+            </button>
+          </nav>
+        </div>
       </header>
 
-      <div className={styles.tabs}>
-        <button
-          className={`${styles.tabBtn} ${tab === "profile" ? styles.active : ""}`}
-          onClick={() => setTab("profile")}
-        >
-          My Profile
-        </button>
-        <button
-          className={`${styles.tabBtn} ${tab === "chat" ? styles.active : ""}`}
-          onClick={() => setTab("chat")}
-        >
-          Chat &amp; Recommendations
-        </button>
-      </div>
+      {tab === "profile" && (
+        <div className={styles.hero}>
+          <div className={styles.heroContent}>
+            <span className={styles.heroTag}>Personalized Beauty</span>
+            <h1>Your skin is unique.<br />Your routine should be too.</h1>
+            <p>
+              Tell us about your skin, your routine, and your preferences &mdash;
+              and we&apos;ll craft recommendations made just for you.
+            </p>
+          </div>
+          <div className={styles.heroVisual}>
+            <div className={styles.heroImages}>
+              <img src="https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=260&h=340&fit=crop" alt="" className={styles.heroImg1} />
+              <img src="https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=220&h=280&fit=crop" alt="" className={styles.heroImg2} />
+            </div>
+          </div>
+        </div>
+      )}
 
-      <div className={styles.content}>
+      {tab === "chat" && (
+        <div className={styles.heroMini}>
+          <span className={styles.heroTag}>AI Beauty Advisor</span>
+          <h1>What can we help you with?</h1>
+        </div>
+      )}
+
+      <main className={styles.main}>
         {tab === "profile" && <ProfileTab />}
         {tab === "chat" && <ChatTab />}
-      </div>
-    </>
+      </main>
+    </div>
   );
 }
