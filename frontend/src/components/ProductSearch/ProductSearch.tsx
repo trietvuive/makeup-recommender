@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { PRODUCTS, PRODUCT_MAP, type Product } from "@/lib/products";
+import { api, type Product } from "@/lib/api";
 import styles from "./ProductSearch.module.scss";
 
 interface Props {
@@ -12,6 +12,8 @@ interface Props {
 export default function ProductSearch({ selected, onChange }: Props) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
+  const [matches, setMatches] = useState<Product[]>([]);
+  const [selectedProducts, setSelectedProducts] = useState<Product[]>([]);
   const wrapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -24,18 +26,37 @@ export default function ProductSearch({ selected, onChange }: Props) {
     return () => document.removeEventListener("click", handleClick);
   }, []);
 
-  const q = query.toLowerCase().trim();
-  const matches = q
-    ? PRODUCTS.filter(
-        (p) =>
-          !selected.includes(p.id) &&
-          (p.name.toLowerCase().includes(q) ||
-            p.brand.toLowerCase().includes(q) ||
-            p.category.toLowerCase().includes(q) ||
-            p.type.toLowerCase().includes(q) ||
-            p.keyIngredients.toLowerCase().includes(q))
-      ).slice(0, 8)
-    : [];
+  useEffect(() => {
+    let cancelled = false;
+    if (selected.length === 0) {
+      setSelectedProducts([]);
+      return;
+    }
+
+    api.getProducts({ ids: selected }).then((products) => {
+      if (!cancelled) setSelectedProducts(products);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selected]);
+
+  useEffect(() => {
+    const q = query.trim();
+    if (!q) {
+      setMatches([]);
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      api.getProducts({ q, limit: 8 }).then((products) => {
+        setMatches(products.filter((p) => !selected.includes(p.id)));
+      });
+    }, 150);
+
+    return () => clearTimeout(timer);
+  }, [query, selected]);
 
   function add(id: string) {
     onChange([...selected, id]);
@@ -58,7 +79,7 @@ export default function ProductSearch({ selected, onChange }: Props) {
             setQuery(e.target.value);
             setOpen(true);
           }}
-          onFocus={() => q && setOpen(true)}
+          onFocus={() => query.trim() && setOpen(true)}
           placeholder="Search products... e.g. CeraVe, moisturizer, sunscreen"
           autoComplete="off"
         />
@@ -83,11 +104,9 @@ export default function ProductSearch({ selected, onChange }: Props) {
         {selected.length === 0 && (
           <div className={styles.empty}>No products added yet.</div>
         )}
-        {selected.map((id) => {
-          const p = PRODUCT_MAP[id];
-          if (!p) return null;
+        {selectedProducts.map((p) => {
           return (
-            <div key={id} className={styles.addedItem}>
+            <div key={p.id} className={styles.addedItem}>
               <img src={p.img} alt="" loading="lazy" />
               <div className={styles.addedInfo}>
                 <div className={styles.addedName}>{p.name}</div>
@@ -95,7 +114,7 @@ export default function ProductSearch({ selected, onChange }: Props) {
                   {p.category} &middot; {p.keyIngredients} &middot; {p.price}
                 </div>
               </div>
-              <button className={styles.removeBtn} onClick={() => remove(id)} title="Remove">
+              <button className={styles.removeBtn} onClick={() => remove(p.id)} title="Remove">
                 &times;
               </button>
             </div>

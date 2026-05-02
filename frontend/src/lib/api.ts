@@ -40,6 +40,17 @@ export interface ChatResponse {
   conversation_id: number;
 }
 
+export interface Product {
+  id: string;
+  name: string;
+  brand: string;
+  category: string;
+  type: string;
+  keyIngredients: string;
+  price: string;
+  img: string;
+}
+
 export const api = {
   getProfile: () => request<ProfileData>("/api/profile"),
 
@@ -55,6 +66,15 @@ export const api = {
     request<{ ok: boolean }>(`/api/conversations/${id}`, { method: "DELETE" }),
 
   getMessages: (id: number) => request<Message[]>(`/api/conversations/${id}/messages`),
+
+  getProducts: (params: { q?: string; ids?: string[]; limit?: number } = {}) => {
+    const search = new URLSearchParams();
+    if (params.q) search.set("q", params.q);
+    if (params.ids?.length) search.set("ids", params.ids.join(","));
+    if (params.limit) search.set("limit", String(params.limit));
+    const suffix = search.toString() ? `?${search.toString()}` : "";
+    return request<Product[]>(`/api/products${suffix}`);
+  },
 
   sendMessage: (conversationId: number | null, message: string) =>
     request<ChatResponse>("/api/chat", {

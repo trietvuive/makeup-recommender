@@ -1,4 +1,5 @@
 import os
+import re
 from openrouter import OpenRouter
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -29,6 +30,17 @@ When recommending products:
 User profile:
 {profile}
 """
+
+
+def hide_thinking(content: str) -> str:
+    """Remove model reasoning blocks from providers that expose them in text."""
+    content = re.sub(
+        r"<(?:think|thinking)>.*?(?:</(?:think|thinking)>|$)",
+        "",
+        content,
+        flags=re.DOTALL | re.IGNORECASE,
+    )
+    return content.strip()
 
 
 def get_client() -> OpenRouter:
@@ -95,6 +107,19 @@ def update_profile():
     return jsonify(updated)
 
 
+@app.route("/api/products", methods=["GET"])
+def list_products():
+    ids = request.args.get("ids", "").strip()
+    if ids:
+        products = db.get_products_by_ids([pid for pid in ids.split(",") if pid])
+        return jsonify(products)
+
+    query = request.args.get("q", "").strip()
+    limit = request.args.get("limit", 20, type=int)
+    products = db.list_products(query=query or None, limit=limit)
+    return jsonify(products)
+
+
 @app.route("/api/conversations", methods=["GET"])
 def list_conversations():
     profile = db.get_or_create_profile()
@@ -119,6 +144,9 @@ def delete_conversation(cid):
 @app.route("/api/conversations/<int:cid>/messages", methods=["GET"])
 def get_messages(cid):
     msgs = db.get_conversation_messages(cid)
+    for msg in msgs:
+        if msg["role"] == "assistant":
+            msg["content"] = hide_thinking(msg["content"])
     return jsonify(msgs)
 
 
@@ -145,7 +173,10 @@ def chat():
 
     routine_products = None
     if profile.get("products"):
-        routine_products = ", ".join(profile["products"])
+        products = db.get_products_by_ids(profile["products"])
+        routine_products = ", ".join(
+            f"{p['brand']} {p['name']}" for p in products
+        )
 
     profile_data = dict(profile)
     profile_data["routine_products"] = routine_products
@@ -154,6 +185,7 @@ def chat():
     result = try_chat(system_content, chat_messages)
 
     if "reply" in result:
+        result["reply"] = hide_thinking(result["reply"])
         db.add_message(conversation_id, "assistant", result["reply"])
         result["conversation_id"] = conversation_id
         return jsonify(result)

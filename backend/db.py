@@ -1,6 +1,7 @@
 import json
 import sqlite3
 from pathlib import Path
+from products_seed import PRODUCTS
 
 DB_PATH = Path(__file__).parent / "data.db"
 
@@ -53,9 +54,102 @@ def init_db():
             content         TEXT NOT NULL,
             created_at      DATETIME DEFAULT CURRENT_TIMESTAMP
         );
+
+        CREATE TABLE IF NOT EXISTS products (
+            id              TEXT PRIMARY KEY,
+            name            TEXT NOT NULL,
+            brand           TEXT NOT NULL,
+            category        TEXT NOT NULL,
+            type            TEXT NOT NULL,
+            key_ingredients TEXT NOT NULL,
+            price           TEXT NOT NULL,
+            img             TEXT NOT NULL,
+            updated_at      DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
     """)
+    seed_products(conn)
     conn.commit()
     conn.close()
+
+
+def seed_products(conn: sqlite3.Connection):
+    for product in PRODUCTS:
+        conn.execute(
+            """
+            INSERT INTO products (
+                id, name, brand, category, type, key_ingredients, price, img
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(id) DO UPDATE SET
+                name = excluded.name,
+                brand = excluded.brand,
+                category = excluded.category,
+                type = excluded.type,
+                key_ingredients = excluded.key_ingredients,
+                price = excluded.price,
+                img = excluded.img,
+                updated_at = CURRENT_TIMESTAMP
+            """,
+            (
+                product["id"],
+                product["name"],
+                product["brand"],
+                product["category"],
+                product["type"],
+                product["keyIngredients"],
+                product["price"],
+                product["img"],
+            ),
+        )
+
+
+def product_from_row(row: sqlite3.Row) -> dict:
+    product = dict(row)
+    product["keyIngredients"] = product.pop("key_ingredients")
+    product.pop("updated_at", None)
+    return product
+
+
+def list_products(query: str | None = None, limit: int = 20) -> list[dict]:
+    conn = get_conn()
+    limit = max(1, min(limit, 50))
+    if query:
+        like = f"%{query.strip()}%"
+        rows = conn.execute(
+            """
+            SELECT * FROM products
+            WHERE name LIKE ?
+               OR brand LIKE ?
+               OR category LIKE ?
+               OR type LIKE ?
+               OR key_ingredients LIKE ?
+            ORDER BY brand, name
+            LIMIT ?
+            """,
+            (like, like, like, like, like, limit),
+        ).fetchall()
+    else:
+        rows = conn.execute(
+            "SELECT * FROM products ORDER BY brand, name LIMIT ?",
+            (limit,),
+        ).fetchall()
+    conn.close()
+    return [product_from_row(r) for r in rows]
+
+
+def get_products_by_ids(product_ids: list[str]) -> list[dict]:
+    if not product_ids:
+        return []
+
+    conn = get_conn()
+    placeholders = ",".join("?" for _ in product_ids)
+    rows = conn.execute(
+        f"SELECT * FROM products WHERE id IN ({placeholders})",
+        product_ids,
+    ).fetchall()
+    conn.close()
+
+    by_id = {row["id"]: product_from_row(row) for row in rows}
+    return [by_id[pid] for pid in product_ids if pid in by_id]
 
 
 # ── Profile CRUD ──────────────────────────────────────────
